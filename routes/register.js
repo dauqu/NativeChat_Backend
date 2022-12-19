@@ -1,15 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const userSchema = require("../models/users");
-const bcrypt= require("bcrypt")
-
+const bcrypt = require("bcrypt");
 
 //register user
 router.post("/", async (req, res) => {
-
   console.log(req.body);
   // //generate random userid
-  const userid = 
+  const userid =
     Math.random().toString(36).substring(2, 15) +
     Math.random().toString(36).substring(2, 15);
 
@@ -18,27 +16,29 @@ router.post("/", async (req, res) => {
 
   //add user
   const user = new userSchema({
-    userid:userid,
+    userid: userid,
     email: req.body.email,
-    password: hashed_password
+    password: hashed_password,
   });
   try {
     await user.save();
     res.status(200).json({
       message: "User created successfully",
-      user
+      user,
     });
   } catch (error) {
-    res.status(400).json({ message: error.message, status: "error" });
+    res
+      .status(400)
+      .json({ message: "Register Error" + error.message, status: "error" });
   }
 });
 
 //middleware for register validation
 async function validation(req, res, next) {
-  const {  email, password, name, phone } = req.body; 
+  const { email, password, name, phone } = req.body;
 
   //check if all fields are filled or not
-  if ( 
+  if (
     email == "" ||
     name == "" ||
     password == "" ||
@@ -60,12 +60,12 @@ async function validation(req, res, next) {
       .json({ message: "Password must be of more than 6 digits" });
 
   //check if email exist or not
-  const email_exists = await userSchema.findOne({ email: req.body.email }); 
+  const email_exists = await userSchema.findOne({ email: req.body.email });
   console.log(email_exists);
-  if (email_exists != null && email_exists.length > 0 )
+  if (email_exists != null && email_exists.length > 0)
     return res.status(400).json({
       message: "Email already exist, try with another one",
-      status: "error", 
+      status: "error",
     });
 
   //check if email is valid
@@ -97,6 +97,5 @@ router.delete("/:id", async (req, res) => {
     res.status(400).send({ message: "User not found", status: "error" });
   }
 });
-
 
 module.exports = router;
